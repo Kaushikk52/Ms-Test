@@ -4,14 +4,21 @@ server:
 spring:
   application:
     name: user
+  profiles:
+    active: local
   datasource:
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     url: jdbc:sqlserver://localhost:1433;databaseName=Demodb;encrypt=false
     username: sa
     password: 123456
   jpa:
+    show-sql: true
+    open-in-view: true
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
   rabbitmq:
     host: localhost
     port: 5672
@@ -24,6 +31,20 @@ spring:
        userCreated-out-0:
          destination: user-events
          content-type: application/json
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+        type:
+          descriptor:
+            sql:
+              BasicBinder: trace
+      springframework:
+        orm:
+          jpa: debug
+
 
 eureka:
   client:
