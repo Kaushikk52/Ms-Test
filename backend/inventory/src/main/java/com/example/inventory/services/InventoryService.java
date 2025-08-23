@@ -1,0 +1,33 @@
+package com.example.inventory.services;
+
+import com.example.inventory.dto.UserEvent;
+import com.example.inventory.models.Inventory;
+import com.example.inventory.repositories.InventoryRepo;
+import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class InventoryService {
+
+    private final InventoryRepo inventoryRepo;
+
+    @RabbitListener(queues = "user.created.queue")
+    public void handleUserCreated(UserEvent event){
+        Inventory inventory = Inventory.builder()
+                .id(event.getId())
+                .itemName("default")
+                .stock(0)
+                .build();
+        inventoryRepo.save(inventory);
+    }
+
+    @RabbitListener(queues="user.deleted.queue")
+    public void handleUserDeleted(UserEvent event){
+         Inventory inv = inventoryRepo.findById(event.getId())
+                 .orElseThrow(()-> new RuntimeException("Inventory not Found..."));
+         inventoryRepo.deleteById(inv.getId());
+
+    }
+}
