@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: user
+    name: user-service
   profiles:
     active: local
   datasource:
@@ -26,11 +26,19 @@ spring:
     password: guest
   cloud:
     stream:
-     defaultBinder: rabbit
-     bindings:
-       userCreated-out-0:
-         destination: user-events
-         content-type: application/json
+      default-binder: rabbit
+      bindings:
+        userCreated-out-0:
+          destination: user-events
+          content-type: application/json
+        rollbackUser-in-0:
+          destination: user-events
+          group: user-service
+      rabbit:
+        bindings:
+          rollbackUser-in-0:
+            consumer:
+              bindingRoutingKey: user.creation.failed
 
 logging:
   level:
@@ -44,7 +52,6 @@ logging:
       springframework:
         orm:
           jpa: debug
-
 
 eureka:
   client:

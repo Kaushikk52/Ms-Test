@@ -1,0 +1,23 @@
+https://javascript.plainenglish.io/why-top-tech-companies-using-react-js-0184f7bb1827
+https://levelup.gitconnected.com/i-failed-this-javascript-question-922dfc862540
+https://javascript.plainenglish.io/react-interview-you-should-know-state-management-c252dfc6b7e5
+https://javascript.plainenglish.io/say-goodbye-to-eslint-and-prettier-e6604b19c122
+https://javascript.plainenglish.io/say-goodbye-to-axios-in-2025-04fc0772c01e
+https://javascript.plainenglish.io/say-goodbye-to-addeventlistener-afff67f71c17
+https://blog.logrocket.com/typescript-enum
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal
+
+
+https://javascript.plainenglish.io/mastering-next-js-a-complete-production-guide-for-modern-react-development-6096b1390c8c
+Data Fetching Mastery
+Image Optimization Deep Dive
+Middleware: The Edge Computing Powerhouse
+Environment Variables and Security
+Performance Optimization Strategies
+SEO and Meta Management
+Error Handling and User Experience
+Advanced Routing Patterns
+API Routes and Backend Integration
+Deployment and Production Optimization
+
+dvh css / Tailwind
