@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserEvent {
-    private Long id;
+    private String id;
     private String userName;
     private String email;
     @Enumerated(EnumType.STRING)

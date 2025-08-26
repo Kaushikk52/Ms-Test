@@ -1,16 +1,19 @@
 package com.example.user.controllers;
 
+import com.example.commons.constants.EventType;
+import com.example.commons.events.UserEvent;
+import com.example.commons.models.GenericResponse;
+import com.example.commons.response.ResponseBuilder;
 import com.example.user.models.User;
 import com.example.user.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.function.StreamBridge;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,73 +24,30 @@ public class UserController {
     private final UserService userServ;
     private final StreamBridge streamBridge;
 
+    // CREATE - SAGA INITIATION
     @PostMapping(value = "/register")
-    public ResponseEntity<Map<String,Object>> register(@RequestBody User user){
-        Map<String,Object> response = new HashMap<>();
-        try{
-            User savedUser = userServ.register(user);
-            log.info("User registered successfully");
-            response.put("message","User registered successfully");
-            response.put("user",savedUser);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (Exception e) {
-            log.warn("An Error occurred : {}", e.getMessage());
-            response.put("message",e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<GenericResponse<User>> createUser(@RequestBody User user) {
+        User savedUser = userServ.register(user);
+        // Publish event to trigger the next step in the saga
+        streamBridge.send("createUser-out-0", new UserEvent(savedUser.getId(),savedUser.getUsername(),savedUser.getEmail(),EventType.CREATED));
+        return ResponseEntity.ok(ResponseBuilder.success(
+                        savedUser,
+                        "User creation initiated. Awaiting saga completion"));
     }
 
-//    @PostMapping(value = "/create")
-//    public ResponseEntity<Map<String,Object>> create(@RequestBody User user){
-//        Map<String,Object> response = new HashMap<>();
-//        try{
-//            streamBridge.send("create-user-out-0",user);
-//            log.info("User registered successfully");
-//            response.put("message","User registered successfully");
-//            return ResponseEntity.status(HttpStatus.OK).body(response);
-//        } catch (Exception e) {
-//            log.warn("An Error occurred : {}", e.getMessage());
-//            response.put("message",e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-//        }
-//    }
 
-//    @GetMapping(value = "/all")
-//    public ResponseEntity<Map<String,Object>> getAll(){
-//        Map<String,Object> response = new HashMap<>();
-//        try {
-//            List<User> users = userServ.getAll();
-//            log.info("Retrieved all users : {}",users.size());
-//            response.put("message","Retrieved all users : "+users.size());
-//            response.put("users",users);
-//            return ResponseEntity.status(HttpStatus.OK).body(response);
-//        } catch (Exception e) {
-//            log.warn("An Error occurred : {}", e.getMessage());
-//            response.put("message",e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-//        }
-//    }
-//
-//    @GetMapping(value = "/{id}")
-//    public ResponseEntity<Map<String,Object>> getById(@PathVariable Long id){
-//        Map<String,Object> response = new HashMap<>();
-//        try {
-//            User user = userServ.getById(id);
-//            log.info("Retrieved User By Id:{}",user.getId());
-//            response.put("message","Retrieved User By Id : "+user.getId());
-//            response.put("user",user);
-//            return ResponseEntity.status(HttpStatus.OK).body(response);
-//        }catch (RuntimeException e) {
-//            log.warn("A RuntimeException occurred : {}", e.getMessage());
-//            response.put("message",e.getMessage());
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-//        } catch (Exception e) {
-//            log.warn("An Error occurred : {}", e.getMessage());
-//            response.put("message",e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-//        }
-//    }
-//
+    @GetMapping("/{id}")
+    public ResponseEntity<GenericResponse<User>> getUserById(@PathVariable String id) {
+        Optional<User> user = userServ.getUserById(id);
+        return ResponseEntity.ok(user.map(ResponseBuilder::success)
+                        .orElse(ResponseBuilder.failure("User Not Found")));
+    }
+
+    @GetMapping
+    public ResponseEntity<GenericResponse<List<User>>> getAllUsers() {
+        return ResponseEntity.ok(ResponseBuilder.success(userServ.getAllUsers(),"Retrieved All Users"));
+    }
+
 //    @PostMapping(value = "/edit")
 //    public ResponseEntity<Map<String,Object>> edit(@RequestBody User user){
 //        Map<String,Object> response = new HashMap<>();
@@ -104,19 +64,12 @@ public class UserController {
 //        }
 //
 //    }
-//
-//    @PostMapping(value = "/delete/{id}")
-//    public ResponseEntity<Map<String,Object>> deleteById(@PathVariable Long id){
-//        Map<String,Object> response = new HashMap<>();
-//        try{
-//            userServ.deleteUser(id);
-//            log.info("User deleted successfully : {}",id);
-//            response.put("message","User deleted Successfully");
-//            return  ResponseEntity.status(HttpStatus.OK).body(response);
-//        }catch (Exception e) {
-//            log.warn("An Error occurred : {}", e.getMessage());
-//            response.put("message",e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-//        }
-//    }
+
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<GenericResponse<String>> deleteUser(@PathVariable String id) {
+        userServ.deleteUser(id);
+        // Publish event to trigger the saga (delete related data in other services)
+        streamBridge.send("deleteUser-out-0", new UserEvent(id,null,null ,EventType.CREATED));
+        return ResponseEntity.ok(ResponseBuilder.success("User deletion initiated."));
+    }
 }

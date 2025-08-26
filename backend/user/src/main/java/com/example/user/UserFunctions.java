@@ -1,4 +1,4 @@
-package com.example.user.config;
+package com.example.user;
 
 import com.example.commons.events.UserEvent;
 import com.example.user.services.UserService;

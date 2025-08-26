@@ -1,17 +1,24 @@
 server:
-  port: 8081
+  port: 8088
 
 spring:
   application:
-    name: inventory
+    name: inventory-service
+  profiles:
+    active: local
   datasource:
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    url: jdbc:sqlserver://localhost:1433;databaseName=Demodb;encrypt=false
-    username: sa
-    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/KaushikDBtest?createDatabaseIfNotExist=true
+    username: root
+    password: mmmmmm
   jpa:
+    show-sql: true
+    open-in-view: true
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
   rabbitmq:
     host: localhost
     port: 5672
@@ -19,12 +26,19 @@ spring:
     password: guest
   cloud:
     stream:
-     defaultBinder: rabbit
-     bindings:
-       userCreated-in-0:
-         destination: user-events
-         group: inventory-service
-         contentType: application/json
+      default-binder: rabbit # Explicitly defining the default binder is good practice
+      bindings:
+        # Listens for 'userCreated' event from the user service
+        userCreated-in-0:
+          destination: user-events
+          group: inventory-service
+        userCreated-out-0:
+          destination: user-events
+      rabbit:
+        bindings:
+          userCreated-in-0:
+            consumer:
+              bindingRoutingKey: user.created
 
 eureka:
   client:
@@ -32,4 +46,3 @@ eureka:
       defaultZone: http://localhost:8761/eureka
     register-with-eureka: true
     fetch-registry: true
-

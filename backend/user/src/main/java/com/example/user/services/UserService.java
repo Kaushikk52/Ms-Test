@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class UserService implements UserDetailsService {
     public User register(User user){
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepo.save(user);
-        UserEvent event = new UserEvent(user.getId(), user.getName(), user.getEmail(), EventType.CREATED);
+        UserEvent event = new UserEvent(user.getId(), user.getName(),user.getEmail(), EventType.CREATED);
         streamBridge.send("userCreated-out-0",event);
         return savedUser;
     }
@@ -43,13 +44,12 @@ public class UserService implements UserDetailsService {
         return userRepo.findAll();
     }
 
-    public User getUserById(String id){
-        return userRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+    public Optional<User> getUserById(String id){
+        return userRepo.findById(id);
     }
 
     public void deleteUser(String id){
-        User user = this.getUserById(id);
+        User user = this.getUserById(id).orElseThrow(() -> new NotFoundException("User Not Found"));
         userRepo.delete(user);
     }
 

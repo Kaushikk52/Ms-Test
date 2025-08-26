@@ -13,10 +13,9 @@ public class InventoryService {
 
     private final InventoryRepo inventoryRepo;
 
-    @RabbitListener(queues = "user.created.queue")
-    public void handleUserCreated(UserEvent event){
+    public void handleUserCreated(String id){
         Inventory inventory = Inventory.builder()
-                .id(event.getId())
+                .id(id)
                 .itemName("default")
                 .stock(0)
                 .build();
