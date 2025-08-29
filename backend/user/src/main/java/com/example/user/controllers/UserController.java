@@ -36,14 +36,14 @@ public class UserController {
     }
 
 
-    @GetMapping("/{id}")
+    @GetMapping(value="/{id}")
     public ResponseEntity<GenericResponse<User>> getUserById(@PathVariable String id) {
         Optional<User> user = userServ.getUserById(id);
         return ResponseEntity.ok(user.map(ResponseBuilder::success)
                         .orElse(ResponseBuilder.failure("User Not Found")));
     }
 
-    @GetMapping
+    @GetMapping(value="/all")
     public ResponseEntity<GenericResponse<List<User>>> getAllUsers() {
         return ResponseEntity.ok(ResponseBuilder.success(userServ.getAllUsers(),"Retrieved All Users"));
     }

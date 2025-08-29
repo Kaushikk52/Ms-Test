@@ -21,12 +21,4 @@ public class InventoryService {
                 .build();
         inventoryRepo.save(inventory);
     }
-
-    @RabbitListener(queues="user.deleted.queue")
-    public void handleUserDeleted(UserEvent event){
-         Inventory inv = inventoryRepo.findById(event.getId())
-                 .orElseThrow(()-> new RuntimeException("Inventory not Found..."));
-         inventoryRepo.deleteById(inv.getId());
-
-    }
 }
