@@ -21,3 +21,9 @@ API Routes and Backend Integration
 Deployment and Production Optimization
 
 dvh css / Tailwind
+
+When a key is hashed, it produces a bucket index in the range 0–15 (assuming default capacity 16).
+If two keys map to the same bucket index, a collision occurs. In that case,
+the bucket stores multiple entries by linking them (initially using a LinkedList).
+Thus, a single bucket can hold many key–value pairs. For retrieval: The key is hashed again to find the correct bucket index.
+ If that bucket has multiple entries, the map traverses them and returns the one whose equals() check matches the given key.
